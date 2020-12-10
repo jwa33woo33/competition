@@ -15,7 +15,6 @@ aichallenge/doc
 aichallenge/distributed_train.sh
 aichallenge/t3_res_U0000000225.json
 aichallenge/test_predict.py
-aichallenge/output/train
 aichallenge/metric.py
 aichallenge/utils.py
 aichallenge/result_jsons/annotations_val.json
@@ -25,4 +24,7 @@ aichallenge/result_jsons/temp.json
 aichallenge/result_jsons/test_dev_6000.json
 aichallenge/result_jsons/test_dev.json
 aichallenge/result_jsons/valid.json
+aichallenge/output/train/model1_d2
+aichallenge/output/train/model11
+
 submit/
