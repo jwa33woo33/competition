@@ -14,6 +14,14 @@ def init_env():
     """
     불필요한 json 파일 삭제 함수
     """
+    root = './result_jsons/'
+    
+    file_list = ['groud_truth.json', 'results.json', 'temp.json', 
+    'test_dev_6000.json', 'test_dev.json', 't3_res_U0000000225.json']
+    
+    # for path in []:
+        # print(root + path)
+    
     pass
 
 
@@ -27,7 +35,7 @@ def create_testdev():
 
     image_files = sorted(list(glob.glob(f'{argv}/*.jpg')))
     if len(image_files) == 0:
-        raise ValueError('폴더에 사진이 하나도 없슴 그래서 COCO 포맷 test-dev를 생성할 수 없슴!')
+        raise ValueError('폴더에 사진이 하나도 없어서 COCO 포맷 test-dev를 생성할 수 없슴!')
     else:
         image_files.sort(key=lambda x: int(''.join(filter(str.isdigit, x))))
 
@@ -40,9 +48,9 @@ def create_testdev():
             img = Image.open(img_file)
             w, h = img.size
             test_dev['images'].append({
-                "file_name": os.path.basename(img_file), 
-                "height": h, 
-                "width": w, 
+                "file_name": os.path.basename(img_file),
+                "height": h,
+                "width": w,
                 "id": i})
         except:
             print(img_file)
@@ -56,7 +64,7 @@ def create_testdev():
         json.dump(test_dev, f, indent='\t')
 
 
-def run_predict_model():
+def run_predict_model(shell=True, check=True):
     """
     
     """
@@ -64,14 +72,14 @@ def run_predict_model():
         import effdet
     except ImportError:
         print('Install effdet...')
-        subprocess.run(['python setup.py install'], shell=True, check=True)
+        subprocess.run(['python setup.py install'], shell=shell, check=check)
 
     print('Run model...')
     pretrained_weight = './output/train/model11/model_best.pth.tar'
     model_name = 'tf_efficientdet_d1'
-    subprocess.run([f'python ./validate.py {argv} --model={model_name}' 
+    subprocess.run([f'python ./validate.py {argv} --model={model_name}'
         + f' --results=./result_jsons/results.json --split=testdev --num-classes=7'
-        + f' --checkpoint={pretrained_weight}' ], shell=True, check=True)
+        + f' --checkpoint={pretrained_weight}'], shell=shell, check=check)
 
 
 def create_submission_file(threshold=0):
@@ -92,32 +100,28 @@ def create_submission_file(threshold=0):
     converted_results = defaultdict(list)
     for output in model_outputs:
         converted_results[output['image_id']].append({
-            'bbox': output['bbox'], 
-            'score': output['score'], 
+            'bbox': output['bbox'],
+            'score': output['score'],
             'category_id': output['category_id']
         })
-    
+
     converted_cnt = 0
     for key, values in converted_results.items():
         for value in values:
             converted_cnt += 1
 
-    print('converted', len(converted_results), converted_cnt)
     testdev_list = [image['id'] for image in test_dev['images']]
     results = defaultdict(list)
     for testdev_id in testdev_list:
         annots = converted_results.get(testdev_id, {
             'bbox': None, 'score': 0.0, 'category_id': ''})
-    
+
         results[testdev_id] += (annots)
 
-    ccheck_cnt = 0
+    check_cnt = 0
     for key, values in results.items():
         for value in values:
-            ccheck_cnt += 1
-
-    print('check outputs', len(results), ccheck_cnt)
-
+            check_cnt += 1
 
 
     print('Generating submission file...')
@@ -127,31 +131,38 @@ def create_submission_file(threshold=0):
             'id': key,
             'file_name': file_names[key],
             'object': []}
-        
+
         for value in values:
             if value['bbox'] is not None:
                 if value['score'] > threshold:
                     temp['object'].append({
                         'box': value['bbox'],
                         'label': classes[value['category_id']]})
-                    submission['annotations'].append(temp)
-    
+                    
+
         if len(temp['object']) == 0:
             temp['object'].append({'box': [], 'label': ''})
-            submission['annotations'].append(temp)
-        
-    # import pprint
-    # for value in submission['annotations']:
-    #     pprint.pprint(value['object'])
-    print('Final', len(converted_results), len(results), len(submission['annotations']))
+            
+
+        submission['annotations'].append(temp)
+    
+    submit_cnt = 0
+    for annot in submission['annotations']:
+        for ann in annot['object']:
+            submit_cnt += 1
+
+    print('Check points...')
+    print(f'- Converted: {len(converted_results)}({converted_cnt})')
+    print(f'- Resulted:  {len(results)}({check_cnt})')
+    print(f'- Final sub: {len(submission["annotations"])}({submit_cnt})')
 
     # Save submission json file
-    print('Save t3_res_U0000000225.json...')    
+    print('Save t3_res_U0000000225.json...')
     with open('./t3_res_U0000000225.json', 'w', encoding='utf-8') as f:
         json.dump(submission, f, indent='\t')
 
 
-def validation():    
+def validation():
     print('Check submission file...')
     with open('./t3_res_U0000000225.json', 'r') as json_file:
         data = json.load(json_file)
@@ -159,19 +170,22 @@ def validation():
     try:
         annots = data['annotations']
         if len(annots) == 0:
-            print('\n예측하나도 안됨!\n')
+            print('\n예측하나도 안됨! ㅇㅅㅇ\n')
             raise ValueError
 
         for annot in annots:
             _ = annot['file_name']
-        
+
     except KeyError as e:
         print('에러!', e)
 
 
 if __name__=='__main__':
+
     # init_env()
     create_testdev()
     run_predict_model()
     create_submission_file(threshold=0.5)
     validation()
+
+        
