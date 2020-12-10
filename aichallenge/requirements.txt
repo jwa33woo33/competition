@@ -1,0 +1,9 @@
+torch>=1.7.0
+torchvision
+timm>=0.3.0
+pyyaml
+numpy
+cython
+pillow
+pycocotools>=2.0.2
+omegaconf>=2.0
