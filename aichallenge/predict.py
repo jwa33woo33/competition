@@ -8,21 +8,7 @@ from PIL import Image
 
 
 argv = sys.argv[1]
-
-
-# def init_env():
-#     """
-#     불필요한 json 파일 삭제 함수
-#     """
-#     root = './result_jsons/'
-    
-#     file_list = ['groud_truth.json', 'results.json', 'temp.json', 
-#     'test_dev_6000.json', 'test_dev.json', 't3_res_U0000000225.json']
-    
-#     # for path in []:
-#         # print(root + path)
-    
-#     pass
+internal = False
 
 
 def create_testdev():
@@ -64,6 +50,38 @@ def create_testdev():
         json.dump(test_dev, f, indent='\t')
 
 
+def create_testdev_internal():
+    """
+    Create testdev json file
+    """
+    print('Generating test-dev.json...')
+    with open('./result_jsons/category.json', 'r') as json_file:
+        category_dict = json.load(json_file)
+        
+    with open('./result_jsons/valid.json', 'r') as f:
+        valid = json.load(f)
+
+    ssibal = []
+    for image_info in valid['images']:
+        path = image_info['file_name'].split('/')[1]
+        ssibal.append({
+            'file_name': path,
+            'id': image_info['id'],
+            'height': image_info['height'],
+            'width': image_info['width']
+        })
+
+    test_dev = {
+        'images': ssibal,
+        "categories": category_dict['categories']}
+
+    # Save test dev json file
+    print('Save json...')
+    # os.path.isfile()
+    with open('./result_jsons/test_dev.json', 'w', encoding='utf-8') as f:
+        json.dump(test_dev, f, indent='\t')
+
+
 def run_predict_model(shell=True, check=True):
     """
     
@@ -78,7 +96,7 @@ def run_predict_model(shell=True, check=True):
     pretrained_weight = './output/train/model_d3/checkpoint-502.pth.tar'
     model_name = 'tf_efficientdet_d3'
     subprocess.run([f'python ./validate.py {argv} --model={model_name}'
-        + f' --results=./result_jsons/results.json --split=testdev --num-classes=7 -b=8'
+        + f' --split=testdev --num-classes=7 -b=8 --native-amp' 
         + f' --pretrained --checkpoint={pretrained_weight}'], shell=shell, check=check)
 
 
@@ -91,7 +109,7 @@ def create_submission_file(threshold=0):
     with open('./result_jsons/test_dev.json', 'r', encoding='utf-8') as json_file:
         test_dev = json.load(json_file)
 
-    with open('./result_jsons/results.json', 'r', encoding='utf-8') as json_file:
+    with open('./result_jsons/temp.json', 'r', encoding='utf-8') as json_file:
         model_outputs = json.load(json_file)
 
     classes = {cat['id']: cat['name'] for cat in test_dev['categories']}
@@ -181,9 +199,11 @@ def validation():
 
 
 if __name__=='__main__':
+    if internal:
+        create_testdev_internal()
+    else:
+        create_testdev()
 
-    # init_env()
-    create_testdev()
     run_predict_model(shell=True, check=True)
     create_submission_file(threshold=0.5)
     validation()

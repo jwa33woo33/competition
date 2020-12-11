@@ -3,6 +3,7 @@
 Hacked together by Ross Wightman
 """
 import torch
+import PIL
 from PIL import Image
 import numpy as np
 import random
@@ -214,6 +215,75 @@ class RandomFlip:
         return img, annotations
 
 
+class RandomSaturation: # youngwoon
+    def __init__(self, lower=0.5, upper=1.5, p=0.2):
+        self.lower = lower
+        self.upper = upper
+        self.p = p
+        assert self.upper >= self.lower, "contrast upper must be >= lower."
+        assert self.lower >= 0, "contrast lower must be non-negative."
+
+    def __call__(self, image, annotations):
+        if np.random.random() < self.p:
+            rand_scale = random.uniform(self.lower, self.upper)
+            converter = PIL.ImageEnhance.Color(image)
+            image = converter.enhance(rand_scale)
+    
+        return image, annotations
+    
+
+
+class RandomContrast: # youngwoon
+    def __init__(self, lower=0.5, upper=1.5, p=0.2):
+        self.lower = lower
+        self.upper = upper
+        self.p = p
+        assert self.upper >= self.lower, "contrast upper must be >= lower."
+        assert self.lower >= 0, "contrast lower must be non-negative."
+
+    def __call__(self, image, annotations):
+        if np.random.random() < self.p:
+            rand_scale = random.uniform(self.lower, self.upper)
+            converter = PIL.ImageEnhance.Contrast(image)
+            image = converter.enhance(rand_scale)
+        
+        return image, annotations
+
+
+class RandomBrightness: # youngwoon
+    def __init__(self, lower=0.5, upper=1.5, p=0.2):
+        self.lower = lower
+        self.upper = upper
+        self.p = p
+        assert self.upper >= self.lower, "contrast upper must be >= lower."
+        assert self.lower >= 0, "contrast lower must be non-negative."
+
+    def __call__(self, image, annotations):
+        if np.random.random() < self.p:
+            rand_scale = random.uniform(self.lower, self.upper)
+            converter = PIL.ImageEnhance.Brightness(image)
+            image = converter.enhance(rand_scale)
+
+        return image, annotations
+
+
+class RandomSharpness: # youngwoon
+    def __init__(self, lower=0.5, upper=1.5, p=0.2):
+        self.lower = lower
+        self.upper = upper
+        self.p = p
+        assert self.upper >= self.lower, "contrast upper must be >= lower."
+        assert self.lower >= 0, "contrast lower must be non-negative."
+
+    def __call__(self, image, annotations):
+        if np.random.random() < self.p:
+            rand_scale = random.uniform(self.lower, self.upper)
+            converter = PIL.ImageEnhance.Sharpness(image)
+            image = converter.enhance(rand_scale)
+
+        return image, annotations
+
+
 def resolve_fill_color(fill_color, img_mean=IMAGENET_DEFAULT_MEAN):
     if isinstance(fill_color, tuple):
         assert len(fill_color) == 3
@@ -240,7 +310,7 @@ class Compose:
 
 
 def transforms_coco_eval(
-        img_size=224,
+        img_size=639,
         interpolation='bilinear',
         use_prefetcher=False,
         fill_color='mean',
@@ -262,7 +332,7 @@ def transforms_coco_eval(
 
 
 def transforms_coco_train(
-        img_size=224,
+        img_size=639,
         interpolation='random',
         use_prefetcher=False,
         fill_color='mean',
@@ -273,6 +343,11 @@ def transforms_coco_train(
 
     image_tfl = [
         RandomFlip(horizontal=True, prob=0.5),
+        RandomFlip(horizontal=False, vertical=True, prob=0.5),
+        RandomSaturation(),
+        RandomContrast(),
+        RandomBrightness(),
+        RandomSharpness(),
         RandomResizePad(
             target_size=img_size, interpolation=interpolation, fill_color=fill_color),
         ImageToNumpy(),

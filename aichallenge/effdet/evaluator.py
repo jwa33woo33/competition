@@ -100,8 +100,8 @@ class CocoEvaluator(Evaluator):
         if not self.distributed or dist.get_rank() == 0:
             assert len(self.predictions)
             coco_predictions, coco_ids = self._coco_predictions()
-            json.dump(coco_predictions, open('./result_jsons/results.json', 'w'), indent=4)
-            results = self.coco_api.loadRes('./result_jsons/results.json')
+            json.dump(coco_predictions, open('./result_jsons/temp.json', 'w'), indent=4)
+            results = self.coco_api.loadRes('./result_jsons/temp.json')
             coco_eval = COCOeval(self.coco_api, results, 'bbox')
             coco_eval.params.imgIds = coco_ids  # score only ids we've used
             coco_eval.evaluate()
