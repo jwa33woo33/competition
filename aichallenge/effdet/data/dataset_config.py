@@ -6,12 +6,6 @@ import os
 from dataclasses import dataclass, field
 from typing import Dict
 
-# @dataclass
-# class CocoCfg:
-#     variant: str = None
-#     parser: str = 'coco'
-#     num_classes: int = 80
-#     splits: Dict[str, dict] = None
 
 @dataclass
 class CocoCfg:
@@ -25,9 +19,9 @@ class CocoCfg:
 class Coco2017Cfg(CocoCfg):
     variant: str = '2017'
     splits: Dict[str, dict] = field(default_factory=lambda: dict(
-        train=dict(ann_filename='annotations.json', img_dir='', has_labels=True),
-        val=dict(ann_filename='annotations.json', img_dir='', has_labels=True),
-        test=dict(ann_filename='test_dev.json', img_dir='', has_labels=False),
+        train=dict(ann_filename='train/annotations.json', img_dir='train', has_labels=True),
+        val=dict(ann_filename='val/annotations.json', img_dir='val', has_labels=True),
+        # test=dict(ann_filename='annotations/image_info_test2017.json', img_dir='test2017', has_labels=False),
         testdev=dict(ann_filename='./result_jsons/test_dev.json', img_dir='', has_labels=False),
     ))
 

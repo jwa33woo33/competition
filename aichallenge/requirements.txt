@@ -1,6 +1,6 @@
 torch>=1.7.0
 torchvision
-timm>=0.3.0
+timm>=0.3.2
 pyyaml
 numpy
 cython

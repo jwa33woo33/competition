@@ -3,7 +3,6 @@
 Hacked together by Ross Wightman
 """
 import torch
-import PIL
 from PIL import Image
 import numpy as np
 import random
@@ -48,6 +47,9 @@ def _pil_interp(method):
     else:
         # default bilinear, do we want to allow nearest?
         return Image.BILINEAR
+
+
+_RANDOM_INTERPOLATION = (Image.BILINEAR, Image.BICUBIC)
 
 
 def clip_boxes_(boxes, img_size):
@@ -107,11 +109,14 @@ class ResizePad:
 
 class RandomResizePad:
 
-    def __init__(self, target_size: int, scale: tuple = (0.1, 2.0), interpolation: str = 'bilinear',
+    def __init__(self, target_size: int, scale: tuple = (0.1, 2.0), interpolation: str = 'random',
                  fill_color: tuple = (0, 0, 0)):
         self.target_size = _size_tuple(target_size)
         self.scale = scale
-        self.interpolation = interpolation
+        if interpolation == 'random':
+            self.interpolation = _RANDOM_INTERPOLATION
+        else:
+            self.interpolation = _pil_interp(interpolation)
         self.fill_color = fill_color
 
     def _get_params(self, img):
@@ -138,8 +143,11 @@ class RandomResizePad:
     def __call__(self, img, anno: dict):
         scaled_h, scaled_w, offset_y, offset_x, img_scale = self._get_params(img)
 
-        interp_method = _pil_interp(self.interpolation)
-        img = img.resize((scaled_w, scaled_h), interp_method)
+        if isinstance(self.interpolation, (tuple, list)):
+            interpolation = random.choice(self.interpolation)
+        else:
+            interpolation = self.interpolation
+        img = img.resize((scaled_w, scaled_h), interpolation)
         right, lower = min(scaled_w, offset_x + self.target_size[1]), min(scaled_h, offset_y + self.target_size[0])
         img = img.crop((offset_x, offset_y, right, lower))
         new_img = Image.new("RGB", (self.target_size[1], self.target_size[0]), color=self.fill_color)
@@ -206,62 +214,6 @@ class RandomFlip:
         return img, annotations
 
 
-class RandomSaturation: # youngwoon
-    def __init__(self, lower=0.5, upper=1.5):
-        self.lower = lower
-        self.upper = upper
-        assert self.upper >= self.lower, "contrast upper must be >= lower."
-        assert self.lower >= 0, "contrast lower must be non-negative."
-
-    def __call__(self, image, annotations):
-        rand_scale = random.uniform(self.lower, self.upper)
-        converter = PIL.ImageEnhance.Color(image)
-        image = converter.enhance(rand_scale)
-        return image, annotations
-
-
-class RandomContrast: # youngwoon
-    def __init__(self, lower=0.5, upper=1.5):
-        self.lower = lower
-        self.upper = upper
-        assert self.upper >= self.lower, "contrast upper must be >= lower."
-        assert self.lower >= 0, "contrast lower must be non-negative."
-
-    def __call__(self, image, annotations):
-        rand_scale = random.uniform(self.lower, self.upper)
-        converter = PIL.ImageEnhance.Contrast(image)
-        image = converter.enhance(rand_scale)
-        return image, annotations
-
-
-class RandomBrightness: # youngwoon
-    def __init__(self, lower=0.5, upper=1.5):
-        self.lower = lower
-        self.upper = upper
-        assert self.upper >= self.lower, "contrast upper must be >= lower."
-        assert self.lower >= 0, "contrast lower must be non-negative."
-
-    def __call__(self, image, annotations):
-        rand_scale = random.uniform(self.lower, self.upper)
-        converter = PIL.ImageEnhance.Brightness(image)
-        image = converter.enhance(rand_scale)
-        return image, annotations
-
-
-class RandomSharpness: # youngwoon
-    def __init__(self, lower=0.5, upper=1.5):
-        self.lower = lower
-        self.upper = upper
-        assert self.upper >= self.lower, "contrast upper must be >= lower."
-        assert self.lower >= 0, "contrast lower must be non-negative."
-
-    def __call__(self, image, annotations):
-        rand_scale = random.uniform(self.lower, self.upper)
-        converter = PIL.ImageEnhance.Sharpness(image)
-        image = converter.enhance(rand_scale)
-        return image, annotations
-
-
 def resolve_fill_color(fill_color, img_mean=IMAGENET_DEFAULT_MEAN):
     if isinstance(fill_color, tuple):
         assert len(fill_color) == 3
@@ -277,6 +229,7 @@ def resolve_fill_color(fill_color, img_mean=IMAGENET_DEFAULT_MEAN):
 
 
 class Compose:
+
     def __init__(self, transforms: list):
         self.transforms = transforms
 
@@ -317,14 +270,11 @@ def transforms_coco_train(
         std=IMAGENET_DEFAULT_STD):
 
     fill_color = resolve_fill_color(fill_color, mean)
+
     image_tfl = [
         RandomFlip(horizontal=True, prob=0.5),
-        # RandomSaturation(),
-        # RandomContrast(),
-        # RandomBrightness(),
-        # RandomSharpness(),
-        # RandomResizePad(
-            # target_size=img_size, interpolation=interpolation, fill_color=fill_color),
+        RandomResizePad(
+            target_size=img_size, interpolation=interpolation, fill_color=fill_color),
         ImageToNumpy(),
     ]
 

@@ -9,7 +9,7 @@ import torch
 import torch.nn.parallel
 from contextlib import suppress
 
-from effdet import create_model, create_evaluator, create_loader, create_dataset
+from effdet import create_model, create_evaluator, create_dataset, create_loader
 from effdet.data import resolve_input_config
 from effdet.evaluator import CocoEvaluator, PascalEvaluator
 from timm.utils import AverageMeter, setup_default_logging
@@ -55,7 +55,7 @@ parser.add_argument('--num-classes', type=int, default=None, metavar='N',
                     help='Override num_classes in model config if set. For fine-tuning from pretrained.')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
-parser.add_argument('-b', '--batch-size', default=32, type=int, # 배치사이즈
+parser.add_argument('-b', '--batch-size', default=128, type=int,
                     metavar='N', help='mini-batch size (default: 128)')
 parser.add_argument('--img-size', default=None, type=int,
                     metavar='N', help='Input image dimension, uses model default if empty')
@@ -148,7 +148,7 @@ def validate(args):
         std=input_config['std'],
         num_workers=args.workers,
         pin_mem=args.pin_mem)
-    
+
     evaluator = create_evaluator(args.dataset, dataset, pred_yxyx=False)
     bench.eval()
     batch_time = AverageMeter()

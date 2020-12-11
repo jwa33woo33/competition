@@ -38,10 +38,9 @@ def create_dataset(name, root, splits=('train', 'val')):
                     data_dir=root / Path(split_cfg['img_dir']),
                     parser=create_parser(dataset_cfg.parser, cfg=parser_cfg),
                 )
-            elif s in ['testdev', 'test']:
+            elif s in ['testdev']:
                 split_cfg = dataset_cfg.splits[s]
                 ann_file = split_cfg['ann_filename']
-                # print('aasdfasdfasdf', ann_file)
                 parser_cfg = CocoParserCfg(
                     ann_filename=ann_file,
                     has_labels=split_cfg['has_labels']
