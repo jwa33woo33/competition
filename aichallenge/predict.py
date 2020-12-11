@@ -93,7 +93,7 @@ def run_predict_model(shell=True, check=True):
         subprocess.run(['python setup.py install'], shell=shell, check=check)
 
     print('Run model...')
-    pretrained_weight = './output/train/model_d3/checkpoint-502.pth.tar'
+    pretrained_weight = './output/train/checkpoint-607.pth.tar'
     model_name = 'tf_efficientdet_d3'
     subprocess.run([f'python ./validate.py {argv} --model={model_name}'
         + f' --split=testdev --num-classes=7 -b=8 --native-amp' 
