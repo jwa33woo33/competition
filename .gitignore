@@ -27,6 +27,10 @@ aichallenge/result_jsons/valid.json
 aichallenge/output/train/model1_d2
 aichallenge/output/train/model11
 aichallenge/output/train/model12
-aichallenge/output/train/model
+aichallenge/output/train/20201211-161533-tf_efficientdet_d0
+aichallenge/output/train/model_d3
+aichallenge/results.json
+aichallenge/data
+
 
 submit/

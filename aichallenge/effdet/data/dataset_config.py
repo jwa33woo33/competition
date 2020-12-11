@@ -22,7 +22,7 @@ class Coco2017Cfg(CocoCfg):
         train=dict(ann_filename='train/annotations.json', img_dir='train', has_labels=True),
         val=dict(ann_filename='val/annotations.json', img_dir='val', has_labels=True),
         # test=dict(ann_filename='annotations/image_info_test2017.json', img_dir='test2017', has_labels=False),
-        testdev=dict(ann_filename='./result_jsons/test_dev.json', img_dir='', has_labels=False),
+        testdev=dict(ann_filename='./result_jsons/test_dev.json', img_dir='', has_labels=True),
     ))
 
 
