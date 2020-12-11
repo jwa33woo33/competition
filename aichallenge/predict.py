@@ -10,19 +10,19 @@ from PIL import Image
 argv = sys.argv[1]
 
 
-def init_env():
-    """
-    불필요한 json 파일 삭제 함수
-    """
-    root = './result_jsons/'
+# def init_env():
+#     """
+#     불필요한 json 파일 삭제 함수
+#     """
+#     root = './result_jsons/'
     
-    file_list = ['groud_truth.json', 'results.json', 'temp.json', 
-    'test_dev_6000.json', 'test_dev.json', 't3_res_U0000000225.json']
+#     file_list = ['groud_truth.json', 'results.json', 'temp.json', 
+#     'test_dev_6000.json', 'test_dev.json', 't3_res_U0000000225.json']
     
-    # for path in []:
-        # print(root + path)
+#     # for path in []:
+#         # print(root + path)
     
-    pass
+#     pass
 
 
 def create_testdev():
@@ -185,6 +185,6 @@ if __name__=='__main__':
     # init_env()
     create_testdev()
     run_predict_model(shell=True, check=True)
-    create_submission_file(threshold=0.0)
+    create_submission_file(threshold=0.5)
     validation()
 
