@@ -595,7 +595,7 @@ def validate(model, loader, args, evaluator=None, log_suffix=''):
             loss = output['loss']
 
             if evaluator is not None:
-                evaluator.add_predictions(output['detections'], target)
+                evaluator.add_predictions(output['detections'], target) ####
 
             if args.distributed:
                 reduced_loss = reduce_tensor(loss.data, args.world_size)

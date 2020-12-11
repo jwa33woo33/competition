@@ -26,5 +26,7 @@ aichallenge/result_jsons/test_dev.json
 aichallenge/result_jsons/valid.json
 aichallenge/output/train/model1_d2
 aichallenge/output/train/model11
+aichallenge/output/train/model12
+aichallenge/output/train/model
 
 submit/

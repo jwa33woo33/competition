@@ -75,10 +75,10 @@ def run_predict_model(shell=True, check=True):
         subprocess.run(['python setup.py install'], shell=shell, check=check)
 
     print('Run model...')
-    pretrained_weight = './output/train/model12/model_best.pth.tar'
-    model_name = 'tf_efficientdet_d2'
+    pretrained_weight = './output/train/model/checkpoint-426.pth.tar'
+    model_name = 'tf_efficientdet_d3'
     subprocess.run([f'python ./validate.py {argv} --model={model_name}'
-        + f' --results=./result_jsons/results.json --split=testdev --num-classes=7'
+        + f' --results=./result_jsons/results.json --split=testdev --num-classes=7 -b=16'
         + f' --checkpoint={pretrained_weight}'], shell=shell, check=check)
 
 
@@ -184,8 +184,8 @@ if __name__=='__main__':
 
     # init_env()
     create_testdev()
-    run_predict_model()
-    create_submission_file(threshold=0.5)
+    run_predict_model(shell=True, check=True)
+    create_submission_file(threshold=0.7)
     validation()
 
         
